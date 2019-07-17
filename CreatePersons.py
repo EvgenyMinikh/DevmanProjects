@@ -1,23 +1,25 @@
 from faker import Faker
 import file_operations as fo
 import random
+import os
 
+FOLDER_FOR_ANKETAS = "Anketas"
 NUMBER_OF_ANKETAS = 10
 TEMPLATE_SOURCE_PATH = "charsheet.svg"
-READY_FILE_PATH_TEMPLATE = "Anketas/result{}.svg"
+READY_FILE_PATH_TEMPLATE = "{}/result{}.svg".format(FOLDER_FOR_ANKETAS, "{}")
 
-skills = [
-    "Стремительный прыжок",
-    "Электрический выстрел",
-    "Ледяной удар",
-    "Стремительный удар",
-    "Кислотный взгляд",
-    "Тайный побег",
-    "Ледяной выстрел",
-    "Огненный заряд"
-]
+SKILLS = [
+          "Стремительный прыжок",
+          "Электрический выстрел",
+          "Ледяной удар",
+          "Стремительный удар",
+          "Кислотный взгляд",
+          "Тайный побег",
+          "Ледяной выстрел",
+          "Огненный заряд"
+          ]
 
-runes_alphabet = {
+RUNES_ALPHABET = {
     'а': 'а͠', 'б': 'б̋', 'в': 'в͒͠',
     'г': 'г͒͠', 'д': 'д̋', 'е': 'е͠',
     'ё': 'ё͒͠', 'ж': 'ж͒', 'з': 'з̋̋͠',
@@ -45,49 +47,57 @@ runes_alphabet = {
 
 
 def change_letters_to_runes(phrase):
-    letters = set(phrase)
+  letters = set(phrase)
+  
+  for letter in letters:
+    if (letter in RUNES_ALPHABET):
+      phrase = phrase.replace(letter, RUNES_ALPHABET[letter])
 
-    for letter in letters:
-        phrase = phrase.replace(letter, runes_alphabet[letter])
-
-    return phrase
+  return phrase
 
 
-def character_anketas_generator(character_number):
-    character_skills_list = random.sample(skills, 3)
-    runic_skills = [change_letters_to_runes(character_skills_list[i]) for i in range(3)]
+def generate_character_card(character_number):
+  character_skills_list = random.sample(SKILLS, 3)
+  runic_skills = []
 
-    fake = Faker("ru_RU")
-    first_name = fake.first_name()
-    last_name = fake.last_name()
-    job = fake.job()
-    town = fake.city()
-    strength = random.randint(8, 14)
-    agility = random.randint(8, 14)
-    endurance = random.randint(8, 14)
-    intelligence = random.randint(8, 14)
-    luck = random.randint(8, 14)
-    skill_1 = runic_skills[0]
-    skill_2 = runic_skills[1]
-    skill_3 = runic_skills[2]
+  for skill in character_skills_list:
+    runic_skills.append(change_letters_to_runes(skill))
+  
+  fake = Faker("ru_RU")
+  first_name = fake.first_name()
+  last_name = fake.last_name()
+  job = fake.job()
+  town = fake.city()
+  strength = random.randint(8, 14)
+  agility = random.randint(8, 14)
+  endurance = random.randint(8, 14)
+  intelligence = random.randint(8, 14)
+  luck = random.randint(8, 14)
+  skill_1 = runic_skills[0]
+  skill_2 = runic_skills[1]
+  skill_3 = runic_skills[2]
 
-    context = {
-        "first_name": first_name,
-        "last_name": last_name,
-        "job": job,
-        "town": town,
-        "strength": strength,
-        "agility": agility,
-        "endurance": endurance,
-        "intelligence": intelligence,
-        "luck": luck,
-        "skill_1": skill_1,
-        "skill_2": skill_2,
-        "skill_3": skill_3
-    }
+  context = { 
+              "first_name": first_name,
+              "last_name": last_name,
+              "job": job,
+              "town": town,
+              "strength": strength,
+              "agility": agility,
+              "endurance": endurance,
+              "intelligence": intelligence,
+              "luck": luck,
+              "skill_1": skill_1,
+              "skill_2": skill_2,
+              "skill_3": skill_3
+            }
 
-    fo.render_template(TEMPLATE_SOURCE_PATH, READY_FILE_PATH_TEMPLATE.format(character_number), context)
+  fo.render_template(TEMPLATE_SOURCE_PATH, READY_FILE_PATH_TEMPLATE.format(character_number), context)
 
+try:
+  os.makedirs(FOLDER_FOR_ANKETAS, mode=0o777, exist_ok=False)
+except FileExistsError:
+  pass
 
 for i in range(NUMBER_OF_ANKETAS):
-    character_anketas_generator(i + 1)
+  generate_character_card(i+1)
